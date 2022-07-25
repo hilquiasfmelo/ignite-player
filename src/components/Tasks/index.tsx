@@ -1,25 +1,54 @@
-import { TaskItem } from '../TaskItem';
-import styles from './styles.module.css';
+import { TbClipboardText } from "react-icons/tb";
+import { ITask } from "../../App";
+import { TaskItem } from "../TaskItem";
+import styles from "./styles.module.css";
 
-export function Tasks() {
+interface IProps {
+  tasks: ITask[];
+  onDeleteTask: (id: string) => void;
+  onCompleted: (id: string) => void;
+}
+
+export function Tasks({ tasks, onDeleteTask, onCompleted }: IProps) {
+  const tasksQuantity = tasks.length;
+  const completedTasks = tasks.filter((task) => task.isCompleted).length;
+
   return (
     <section className={styles.tasks}>
       <header className={styles.header}>
         <div>
           <p>Tarefas criadas</p>
-          <span>05</span>
+          <span>{tasksQuantity}</span>
         </div>
 
         <div>
           <p className={styles.textPurple}>Concluídas</p>
-          <span>2 de 05</span>
+          <span>
+            {completedTasks} de {tasksQuantity}
+          </span>
         </div>
       </header>
 
       <div className={styles.taskItem}>
-        <TaskItem />
-        <TaskItem />
+        {tasks.map((task) => (
+          <TaskItem
+            key={task.id}
+            task={task}
+            onDeleteTask={onDeleteTask}
+            onCompleted={onCompleted}
+          />
+        ))}
+
+        {tasks.length <= 0 && (
+          <section className={styles.empty}>
+            <TbClipboardText size={50} />
+            <div>
+              <p>Você ainda não tem tarefas cadastradas</p>
+              <span>Crie tarefas e organize seus itens a fazer</span>
+            </div>
+          </section>
+        )}
       </div>
     </section>
-  )
+  );
 }

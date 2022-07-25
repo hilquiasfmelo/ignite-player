@@ -1,11 +1,76 @@
+import { useEffect, useState } from "react";
 import { Header } from "./components/Header";
 import { Tasks } from "./components/Tasks";
 
+const LOCAL_STORAGE_KEY = "IgnitePlayer@SavedTasks";
+
+export interface ITask {
+  id: string;
+  title: string;
+  isCompleted: boolean;
+}
+
 export function App() {
+  const [tasks, setTasks] = useState<ITask[]>([]);
+
+  function loadSavedTasks() {
+    const savedTasks = localStorage.getItem(LOCAL_STORAGE_KEY);
+
+    if (savedTasks) {
+      setTasks(JSON.parse(savedTasks));
+    }
+  }
+
+  useEffect(() => {
+    loadSavedTasks();
+  }, []);
+
+  function setTasksAndSave(newTasks: ITask[]) {
+    setTasks(newTasks);
+
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newTasks));
+  }
+
+  function addTask(title: string) {
+    setTasksAndSave([
+      ...tasks,
+      {
+        id: crypto.randomUUID(),
+        title,
+        isCompleted: false,
+      },
+    ]);
+  }
+
+  function deleteTaskById(id: string) {
+    const newTasks = tasks.filter((task) => task.id !== id);
+
+    setTasksAndSave(newTasks);
+  }
+
+  function toggleTaskCompletedById(id: string) {
+    const newTasks = tasks.map((task) => {
+      if (task.id === id) {
+        return {
+          ...task,
+          isCompleted: !task.isCompleted,
+        };
+      }
+
+      return task;
+    });
+
+    setTasksAndSave(newTasks);
+  }
+
   return (
     <>
-      <Header />
-      <Tasks />
+      <Header onAddTask={addTask} />
+      <Tasks
+        tasks={tasks}
+        onDeleteTask={deleteTaskById}
+        onCompleted={toggleTaskCompletedById}
+      />
     </>
   );
 }
